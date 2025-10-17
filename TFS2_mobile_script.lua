@@ -1,4 +1,4 @@
--- =================== Hilichurl HUB (FIXED MID MAP TARGETING) ===================
+-- =================== Hilichurl HUB ===================
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -315,7 +315,7 @@ local priorityTargets = {
     Closest = true
 }
 
--- Cơ chế di chuyển ổn định
+-- Stable movement
 local lastTargetPos = nil
 local positionStabilized = false
 local STABILIZATION_THRESHOLD = 2
@@ -384,7 +384,7 @@ local function lockCurrentTarget(target)
     startTargetCheck()
 end
 
--- ================= IMPROVED ATTACK POSITION SYSTEM =================
+-- ================= ATTACK POSITION SYSTEM =================
 
 local function calculateAttackPosition(target)
     if not target or not target:FindFirstChild("Head") then return nil end
@@ -393,7 +393,7 @@ local function calculateAttackPosition(target)
     local enemyPos = enemyHead.Position
     
     if attackPosition == "Behind" then
-        -- Vị trí PHÍA SAU kẻ địch
+        -- Behind
         if not localPlayer.Character or not localPlayer.Character:FindFirstChild("Head") then
             return nil
         end
@@ -401,15 +401,15 @@ local function calculateAttackPosition(target)
         local playerPos = localPlayer.Character.Head.Position
         local toPlayer = (playerPos - enemyPos).Unit
         
-        -- Vị trí phía sau là ngược hướng nhìn của kẻ địch
+        -- Backward direction is opposite to the direction to the player
         local behindDirection = -toPlayer * attackDistance
         local behindPosition = enemyPos + behindDirection
         
-        -- Giữ nguyên độ cao Y của kẻ địch
+        -- Distance
         return Vector3.new(behindPosition.X, enemyPos.Y, behindPosition.Z)
         
     elseif attackPosition == "Front" then
-        -- Vị trí PHÍA TRƯỚC kẻ địch
+        -- Front
         if not localPlayer.Character or not localPlayer.Character:FindFirstChild("Head") then
             return nil
         end
@@ -417,19 +417,19 @@ local function calculateAttackPosition(target)
         local playerPos = localPlayer.Character.Head.Position
         local toPlayer = (playerPos - enemyPos).Unit
         
-        -- Vị trí phía trước là cùng hướng với hướng nhìn của kẻ địch
+        -- Front direction is towards the player
         local frontDirection = toPlayer * attackDistance
         local frontPosition = enemyPos + frontDirection
         
-        -- Giữ nguyên độ cao Y của kẻ địch
+        -- 
         return Vector3.new(frontPosition.X, enemyPos.Y, frontPosition.Z)
     else
-        -- Mặc định: vị trí PHÍA TRÊN kẻ địch
+        -- Default Above
         return Vector3.new(enemyPos.X, enemyPos.Y + attackDistance, enemyPos.Z)
     end
 end
 
--- ================= OPTIMIZED MOVEMENT SYSTEM =================
+-- ================= MOVEMENT SYSTEM =================
 
 local function startCFrameFly(targetPosition)
     if not localPlayer.Character then return false end
@@ -474,38 +474,38 @@ local function startCFrameFly(targetPosition)
         local direction = (targetPos - currentPos)
         local distance = direction.Magnitude
         
-        -- Kiểm tra nếu đã ở vị trí ổn định
+        -- Position stabilization
         if distance < STABILIZATION_THRESHOLD then
             if not positionStabilized then
                 positionStabilized = true
                 lastStablePosition = currentPos
             end
-            return -- Giữ nguyên vị trí hiện tại
+            return
         else
             positionStabilized = false
         end
         
-        -- Tính toán di chuyển với tốc độ cao
+        
         local moveDirection = direction.Unit * math.min(flySpeed * deltaTime, distance)
         
-        -- Áp dụng di chuyển
+        
         local headCFrame = currentHead.CFrame
         local camera = workspace.CurrentCamera
         local cameraCFrame = camera.CFrame
         
-        -- Tính offset camera
+    
         local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
         
-        -- Điều chỉnh vị trí camera
+        
         cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X, -cameraOffset.Y, -cameraOffset.Z + 1)
         local cameraPosition = cameraCFrame.Position
         local headPosition = headCFrame.Position
         
-        -- Tính toán vận tốc trong không gian object
+     
         local lookCFrame = CFrame.new(cameraPosition, Vector3.new(headPosition.X, cameraPosition.Y, headPosition.Z))
         local objectSpaceVelocity = lookCFrame:VectorToObjectSpace(moveDirection)
         
-        -- Áp dụng di chuyển với tốc độ cao
+       
         local newCFrame = CFrame.new(headPosition) * (cameraCFrame - cameraPosition) * CFrame.new(objectSpaceVelocity)
         
         currentHead.CFrame = newCFrame
@@ -540,7 +540,7 @@ local function stopCFrameFly()
     end
 end
 
--- ================= FIXED TARGET PRIORITY SYSTEM =================
+-- ================= TARGET PRIORITY SYSTEM =================
 
 local function getTargetPriority(zombieName)
     local nameLower = string.lower(zombieName)
@@ -559,7 +559,7 @@ local function getTargetPriority(zombieName)
 end
 
 local function findPriorityZombie()
-    -- Nếu đang khóa mục tiêu và mục tiêu vẫn hợp lệ, tiếp tục sử dụng
+    
     if lockTargetEnabled and currentLockedTarget and isTargetValid(currentLockedTarget) then
         local distance = (currentLockedTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude
         return currentLockedTarget, distance
@@ -573,7 +573,7 @@ local function findPriorityZombie()
         return nil, math.huge 
     end
     
-    -- Quét toàn bộ zombie trên bản đồ
+   
     local allZombies = {}
     for _, zombie in pairs(workspace.Zombies:GetChildren()) do
         if zombie and zombie:FindFirstChild("Head") and zombie:FindFirstChild("Zombie") and zombie.Zombie.Health > 0 then
@@ -581,15 +581,15 @@ local function findPriorityZombie()
         end
     end
     
-    -- Tìm mục tiêu ưu tiên (Wraith, Hunter, Lurker, Boss)
+    -- Priority enemy (Wraith, Hunter, Lurker, Boss)
     for _, zombie in pairs(allZombies) do
         local priority = getTargetPriority(zombie.Name)
         
-        -- Nếu mục tiêu này có độ ưu tiên cao hơn
+        
         if priority > bestPriority then
             bestTarget = zombie
             bestPriority = priority
-        -- Nếu cùng độ ưu tiên, chọn mục tiêu gần hơn
+        
         elseif priority == bestPriority and bestTarget then
             local currentDistance = (zombie.Head.Position - localPlayer.Character.Head.Position).Magnitude
             local bestTargetDistance = (bestTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude
@@ -599,7 +599,7 @@ local function findPriorityZombie()
         end
     end
     
-    -- SỬA LỖI: Tìm mục tiêu gần MID MAP nhất (chỉ khi không có mục tiêu ưu tiên)
+    
     if not bestTarget and priorityTargets.Closest then
         local closestDistanceToMid = math.huge
         local closestTargetToMid = nil
@@ -618,7 +618,7 @@ local function findPriorityZombie()
         end
     end
     
-    -- Khóa mục tiêu mới nếu tìm thấy
+    
     if bestTarget and lockTargetEnabled then
         lockCurrentTarget(bestTarget)
     else
@@ -648,9 +648,9 @@ ToggleMoveBtn.MouseButton1Click:Connect(function()
     ToggleMoveBtn.Text = _G.automove and "Auto Move ON" or "Auto Move OFF"
     ToggleMoveBtn.BackgroundColor3 = _G.automove and Color3.fromRGB(100,180,100) or Color3.fromRGB(80,80,80)
     
-    -- Bật/tắt CFrameFly trực tiếp với Auto Move
+    
     if _G.automove then
-        -- Bật CFrameFly khi có mục tiêu
+        
         local target, _ = findPriorityZombie()
         if target then
             local attackPos = calculateAttackPosition(target)
@@ -659,7 +659,7 @@ ToggleMoveBtn.MouseButton1Click:Connect(function()
             end
         end
     else
-        -- Tắt CFrameFly khi tắt Auto Move
+        
         stopCFrameFly()
     end
 end)
@@ -735,7 +735,7 @@ end)
 
 -- Dropdown Events
 AttackPosDropdown.MouseButton1Click:Connect(function()
-    -- Dropdown đã được xử lý trong hàm createDropdown
+    
 end)
 
 -- TextBox Events
@@ -1112,7 +1112,7 @@ local function autoReadyLogic()
     end
 end
 
--- ================= OPTIMIZED MAIN LOOP =================
+-- ================= MAIN LOOP =================
 RunService.RenderStepped:Connect(function()
     -- Mid Map Logic
     if midMapEnabled and not zombiesAlive() and isPlayerAlive() then
@@ -1127,12 +1127,12 @@ RunService.RenderStepped:Connect(function()
             camera.CFrame = CFrame.new(camera.CFrame.Position, target.Head.Position)
         end
         
-        -- Di chuyển ổn định với cập nhật thông minh
+        
         if _G.automove then
             local attackPos = calculateAttackPosition(target)
             
             if attackPos then
-                -- Chỉ cập nhật vị trí nếu mục tiêu di chuyển đáng kể
+                
                 if not lastTargetPos or (attackPos - lastTargetPos).Magnitude > 5 then
                     lastTargetPos = attackPos
                     
@@ -1145,7 +1145,7 @@ RunService.RenderStepped:Connect(function()
             end
         end
         
-        -- Auto Shoot (sử dụng shootRange)
+        -- Auto Shoot
         if _G.autoshoot and dist <= shootRange then
             autoShoot(target, dist)
         end
