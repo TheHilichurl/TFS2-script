@@ -233,32 +233,31 @@ local AttackSpdFrame, AttackSpdBox     = createLabeledBox("Atk Speed:",0.05,250)
 local ShootRangeFrame, ShootRangeTextBox = createLabeledBox("Shoot Range:",200,280)
 
 -- Auto Move Settings
-local MoveSettingsLabel              = createSectionLabel("=== AUTO MOVE ===", 320)
-local FlySpeedFrame, FlySpeedTextBox = createLabeledBox("Fly Speed:",30000,340)
-local DistanceFrame, DistanceTextBox = createLabeledBox("Distance:",2,370)
+local MoveSettingsLabel              = createSectionLabel("=== AUTO MOVE ===", 310)
+local DistanceFrame, DistanceTextBox = createLabeledBox("Distance:",2,330)
 
 -- Toggle Settings
-local LockTargetFrame, LockTargetToggle = createToggle("Lock Target", 400, true)
-local AttackPosFrame, AttackPosDropdown, AttackPosMenu = createDropdown("Attack Position", {"Above", "Behind", "Front"}, "Above", 430)
+local AttackPosFrame, AttackPosDropdown, AttackPosMenu = createDropdown("Attack Position", {"Above", "Behind", "Front"}, "Above", 360)
 
 -- Priority Targets Section
-local PriorityLabel = createSectionLabel("=== PRIORITY TARGETS ===", 470)
-local WraithFrame, WraithToggle = createToggle("Wraith", 490, true)
-local HunterFrame, HunterToggle = createToggle("Hunter", 520, true)
-local LurkerFrame, LurkerToggle = createToggle("Lurker", 550, true)
-local BossFrame, BossToggle = createToggle("Boss", 580, true)
-local ClosestFrame, ClosestToggle = createToggle("Closest to Mid", 610, true)
+local PriorityLabel = createSectionLabel("=== PRIORITY TARGETS ===", 400)
+local WraithFrame, WraithToggle = createToggle("Wraith", 420, true)
+local HunterFrame, HunterToggle = createToggle("Hunter", 450, true)
+local LurkerFrame, LurkerToggle = createToggle("Lurker", 480, true)
+local BerserkerFrame, BerserkerToggle = createToggle("Berserker", 510, true)
+local BossFrame, BossToggle = createToggle("Boss", 540, true)
+local ClosestFrame, ClosestToggle = createToggle("Closest to Mid", 570, true)
 
 -- Mid Map Section
-local MidMapLabel = createSectionLabel("=== MID MAP ===", 650)
-local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,670)
-local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",-6,700)
-local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,730)
+local MidMapLabel = createSectionLabel("=== MID MAP ===", 610)
+local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,630)
+local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,660)
+local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,690)
 
 -- Weapon Menu
 local WeaponMenuFrame = Instance.new("Frame")
 WeaponMenuFrame.Parent = ContentFrame
-WeaponMenuFrame.Position = UDim2.new(0,8,0,760)
+WeaponMenuFrame.Position = UDim2.new(0,8,0,720)
 WeaponMenuFrame.Size = UDim2.new(1,-16,0,120)
 WeaponMenuFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 WeaponMenuFrame.Visible = false
@@ -295,11 +294,10 @@ _G.autoready = false
 local flyEnabled = false
 local flyConnection = nil
 local currentFlyTarget = nil
-local flySpeed = 30000
+local flySpeed = math.huge
 local attackDistance = 2
 
--- Lock Target
-local lockTargetEnabled = true
+-- Lock Target (always enabled)
 local currentLockedTarget = nil
 local targetCheckConnection = nil
 
@@ -311,6 +309,7 @@ local priorityTargets = {
     Wraith = true,
     Hunter = true,
     Lurker = true,
+    Berserker = true,
     Boss = true,
     Closest = true
 }
@@ -327,7 +326,7 @@ local baseSpeed = 14
 local attackDelay = 0.05
 local shootRange = 200
 
-local midMapPos = Vector3.new(0, -6, -350)
+local midMapPos = Vector3.new(0, 6, -350)
 
 local selectedWeapon = nil
 
@@ -361,7 +360,7 @@ local function startTargetCheck()
     end
     
     targetCheckConnection = RunService.Heartbeat:Connect(function()
-        if not lockTargetEnabled or not currentLockedTarget then
+        if not currentLockedTarget then
             return
         end
         
@@ -374,10 +373,6 @@ local function startTargetCheck()
 end
 
 local function lockCurrentTarget(target)
-    if not lockTargetEnabled then
-        return
-    end
-    
     currentLockedTarget = target
     lastTargetPos = nil
     positionStabilized = false
@@ -405,7 +400,6 @@ local function calculateAttackPosition(target)
         local behindDirection = -toPlayer * attackDistance
         local behindPosition = enemyPos + behindDirection
         
-        -- Distance
         return Vector3.new(behindPosition.X, enemyPos.Y, behindPosition.Z)
         
     elseif attackPosition == "Front" then
@@ -421,10 +415,9 @@ local function calculateAttackPosition(target)
         local frontDirection = toPlayer * attackDistance
         local frontPosition = enemyPos + frontDirection
         
-        -- 
         return Vector3.new(frontPosition.X, enemyPos.Y, frontPosition.Z)
     else
-        -- Default Above
+        -- Above
         return Vector3.new(enemyPos.X, enemyPos.Y + attackDistance, enemyPos.Z)
     end
 end
@@ -485,27 +478,21 @@ local function startCFrameFly(targetPosition)
             positionStabilized = false
         end
         
-        
         local moveDirection = direction.Unit * math.min(flySpeed * deltaTime, distance)
-        
         
         local headCFrame = currentHead.CFrame
         local camera = workspace.CurrentCamera
         local cameraCFrame = camera.CFrame
         
-    
         local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
-        
         
         cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X, -cameraOffset.Y, -cameraOffset.Z + 1)
         local cameraPosition = cameraCFrame.Position
         local headPosition = headCFrame.Position
         
-     
         local lookCFrame = CFrame.new(cameraPosition, Vector3.new(headPosition.X, cameraPosition.Y, headPosition.Z))
         local objectSpaceVelocity = lookCFrame:VectorToObjectSpace(moveDirection)
         
-       
         local newCFrame = CFrame.new(headPosition) * (cameraCFrame - cameraPosition) * CFrame.new(objectSpaceVelocity)
         
         currentHead.CFrame = newCFrame
@@ -546,10 +533,12 @@ local function getTargetPriority(zombieName)
     local nameLower = string.lower(zombieName)
     
     if priorityTargets.Wraith and string.find(nameLower, "wraith") then
-        return 5
+        return 6
     elseif priorityTargets.Hunter and string.find(nameLower, "hunter") then
-        return 4
+        return 5
     elseif priorityTargets.Lurker and string.find(nameLower, "lurker") then
+        return 4
+    elseif priorityTargets.Berserker and string.find(nameLower, "berserker") then
         return 3
     elseif priorityTargets.Boss and string.find(nameLower, "boss") then
         return 2
@@ -559,8 +548,7 @@ local function getTargetPriority(zombieName)
 end
 
 local function findPriorityZombie()
-    
-    if lockTargetEnabled and currentLockedTarget and isTargetValid(currentLockedTarget) then
+    if currentLockedTarget and isTargetValid(currentLockedTarget) then
         local distance = (currentLockedTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude
         return currentLockedTarget, distance
     end
@@ -573,7 +561,6 @@ local function findPriorityZombie()
         return nil, math.huge 
     end
     
-   
     local allZombies = {}
     for _, zombie in pairs(workspace.Zombies:GetChildren()) do
         if zombie and zombie:FindFirstChild("Head") and zombie:FindFirstChild("Zombie") and zombie.Zombie.Health > 0 then
@@ -581,15 +568,13 @@ local function findPriorityZombie()
         end
     end
     
-    -- Priority enemy (Wraith, Hunter, Lurker, Boss)
+    -- Priority enemy (Wraith, Hunter, Lurker, Berserker, Boss)
     for _, zombie in pairs(allZombies) do
         local priority = getTargetPriority(zombie.Name)
-        
         
         if priority > bestPriority then
             bestTarget = zombie
             bestPriority = priority
-        
         elseif priority == bestPriority and bestTarget then
             local currentDistance = (zombie.Head.Position - localPlayer.Character.Head.Position).Magnitude
             local bestTargetDistance = (bestTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude
@@ -598,7 +583,6 @@ local function findPriorityZombie()
             end
         end
     end
-    
     
     if not bestTarget and priorityTargets.Closest then
         local closestDistanceToMid = math.huge
@@ -618,8 +602,7 @@ local function findPriorityZombie()
         end
     end
     
-    
-    if bestTarget and lockTargetEnabled then
+    if bestTarget then
         lockCurrentTarget(bestTarget)
     else
         currentLockedTarget = nil
@@ -648,9 +631,7 @@ ToggleMoveBtn.MouseButton1Click:Connect(function()
     ToggleMoveBtn.Text = _G.automove and "Auto Move ON" or "Auto Move OFF"
     ToggleMoveBtn.BackgroundColor3 = _G.automove and Color3.fromRGB(100,180,100) or Color3.fromRGB(80,80,80)
     
-    
     if _G.automove then
-        
         local target, _ = findPriorityZombie()
         if target then
             local attackPos = calculateAttackPosition(target)
@@ -659,7 +640,6 @@ ToggleMoveBtn.MouseButton1Click:Connect(function()
             end
         end
     else
-        
         stopCFrameFly()
     end
 end)
@@ -689,20 +669,6 @@ ToggleNoclipBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Toggle Events
-LockTargetToggle.MouseButton1Click:Connect(function()
-    lockTargetEnabled = not lockTargetEnabled
-    LockTargetToggle.Text = lockTargetEnabled and "ON" or "OFF"
-    LockTargetToggle.TextColor3 = lockTargetEnabled and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
-    
-    if not lockTargetEnabled then
-        currentLockedTarget = nil
-        if targetCheckConnection then
-            targetCheckConnection:Disconnect()
-            targetCheckConnection = nil
-        end
-    end
-end)
-
 WraithToggle.MouseButton1Click:Connect(function()
     priorityTargets.Wraith = not priorityTargets.Wraith
     WraithToggle.Text = priorityTargets.Wraith and "ON" or "OFF"
@@ -721,6 +687,12 @@ LurkerToggle.MouseButton1Click:Connect(function()
     LurkerToggle.TextColor3 = priorityTargets.Lurker and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
 end)
 
+BerserkerToggle.MouseButton1Click:Connect(function()
+    priorityTargets.Berserker = not priorityTargets.Berserker
+    BerserkerToggle.Text = priorityTargets.Berserker and "ON" or "OFF"
+    BerserkerToggle.TextColor3 = priorityTargets.Berserker and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
+end)
+
 BossToggle.MouseButton1Click:Connect(function()
     priorityTargets.Boss = not priorityTargets.Boss
     BossToggle.Text = priorityTargets.Boss and "ON" or "OFF"
@@ -735,7 +707,7 @@ end)
 
 -- Dropdown Events
 AttackPosDropdown.MouseButton1Click:Connect(function()
-    
+    attackPosition = AttackPosDropdown.Text
 end)
 
 -- TextBox Events
@@ -758,16 +730,6 @@ ShootRangeTextBox.FocusLost:Connect(function()
         ShootRangeTextBox.Text = tostring(shootRange)
     else
         ShootRangeTextBox.Text = tostring(shootRange)
-    end
-end)
-
-FlySpeedTextBox.FocusLost:Connect(function()
-    local v = tonumber(FlySpeedTextBox.Text)
-    if v and v > 0 then
-        flySpeed = v
-        FlySpeedTextBox.Text = tostring(flySpeed)
-    else
-        FlySpeedTextBox.Text = tostring(flySpeed)
     end
 end)
 
@@ -834,7 +796,7 @@ HubTitle.MouseButton1Click:Connect(function()
     WeaponMenuFrame.Visible = expanded
     if expanded then
         refreshWeaponMenu()
-        MainFrame.Size = UDim2.new(0,250,0,900)
+        MainFrame.Size = UDim2.new(0,250,0,870)
         
         -- Show all elements
         ToggleAimbotBtn.Visible = true
@@ -850,15 +812,14 @@ HubTitle.MouseButton1Click:Connect(function()
         ShootRangeFrame.Visible = true
         
         MoveSettingsLabel.Visible = true
-        FlySpeedFrame.Visible = true
         DistanceFrame.Visible = true
-        LockTargetFrame.Visible = true
         AttackPosFrame.Visible = true
         
         PriorityLabel.Visible = true
         WraithFrame.Visible = true
         HunterFrame.Visible = true
         LurkerFrame.Visible = true
+        BerserkerFrame.Visible = true
         BossFrame.Visible = true
         ClosestFrame.Visible = true
         
@@ -883,9 +844,7 @@ HubTitle.MouseButton1Click:Connect(function()
         ShootRangeFrame.Visible = false
         
         MoveSettingsLabel.Visible = false
-        FlySpeedFrame.Visible = false
         DistanceFrame.Visible = false
-        LockTargetFrame.Visible = false
         AttackPosFrame.Visible = false
         AttackPosMenu.Visible = false
         
@@ -893,6 +852,7 @@ HubTitle.MouseButton1Click:Connect(function()
         WraithFrame.Visible = false
         HunterFrame.Visible = false
         LurkerFrame.Visible = false
+        BerserkerFrame.Visible = false
         BossFrame.Visible = false
         ClosestFrame.Visible = false
         
@@ -1069,47 +1029,40 @@ end
 RunService.Stepped:Connect(updateNoclip)
 
 -- ================= Auto Ready Logic =================
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local remoteFunctions = ReplicatedStorage:WaitForChild("RemoteFunctions")
+local voteSkip = remoteFunctions:WaitForChild("VoteSkip")
+
 local lastNoZombieTime = 0
 local lastReadyClickTime = 0
 local zombieTimerRunning = false
 local autoReadyDelay = 15
 
 local function autoReadyLogic()
-    while task.wait(1) do
-        if not _G.autoready then
-            lastNoZombieTime = 0
-            zombieTimerRunning = false
-        else
-            if not zombiesAlive() then
-                if not zombieTimerRunning then
-                    zombieTimerRunning = true
-                    lastNoZombieTime = tick()
-                end
-                if tick() - lastNoZombieTime >= autoReadyDelay then
-                    if tick() - lastReadyClickTime >= autoReadyDelay then
-                        lastReadyClickTime = tick()
-                        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            local root = localPlayer.Character.HumanoidRootPart
-                            local thirdPersonOffset = root.CFrame * CFrame.new(0, 5, 10)
-                            camera.CameraType = Enum.CameraType.Scriptable
-                            camera.CFrame = thirdPersonOffset * CFrame.Angles(math.rad(-15), 0, 0)
-                        end
-                        task.wait(0.5)
-                        local screenSize = camera.ViewportSize
-                        local readyPos = Vector2.new(screenSize.X * 0.65, screenSize.Y * 0.06)
-                        VirtualInputManager:SendMouseButtonEvent(readyPos.X, readyPos.Y, 0, true, game, 1)
-                        task.wait(0.1)
-                        VirtualInputManager:SendMouseButtonEvent(readyPos.X, readyPos.Y, 0, false, game, 1)
-                        task.wait(0.5)
-                        camera.CameraType = Enum.CameraType.Custom
-                    end
-                end
-            else
-                lastNoZombieTime = 0
-                zombieTimerRunning = false
-            end
-        end
-    end
+	while task.wait(1) do
+		if not _G.autoready then
+			lastNoZombieTime = 0
+			zombieTimerRunning = false
+		else
+			if not zombiesAlive() then
+				if not zombieTimerRunning then
+					zombieTimerRunning = true
+					lastNoZombieTime = tick()
+				end
+				if tick() - lastNoZombieTime >= autoReadyDelay then
+					if tick() - lastReadyClickTime >= autoReadyDelay then
+						lastReadyClickTime = tick()
+						pcall(function()
+							voteSkip:InvokeServer()
+						end)
+					end
+				end
+			else
+				lastNoZombieTime = 0
+				zombieTimerRunning = false
+			end
+		end
+	end
 end
 
 -- ================= MAIN LOOP =================
@@ -1127,12 +1080,11 @@ RunService.RenderStepped:Connect(function()
             camera.CFrame = CFrame.new(camera.CFrame.Position, target.Head.Position)
         end
         
-        
+        -- Auto Move
         if _G.automove then
             local attackPos = calculateAttackPosition(target)
             
             if attackPos then
-                
                 if not lastTargetPos or (attackPos - lastTargetPos).Magnitude > 5 then
                     lastTargetPos = attackPos
                     
