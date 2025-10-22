@@ -40,7 +40,7 @@ ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundColor3 = Color3.fromRGB(40,35,35)
 ContentFrame.Position = UDim2.new(0,0,0,40)
 ContentFrame.Size = UDim2.new(1,0,0,400)
-ContentFrame.CanvasSize = UDim2.new(0,0,0,1200)
+ContentFrame.CanvasSize = UDim2.new(0,0,0,1500)
 ContentFrame.ScrollBarThickness = 4
 ContentFrame.Visible = false
 ContentFrame.BorderSizePixel = 0
@@ -254,34 +254,84 @@ local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,630)
 local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,660)
 local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,690)
 
--- Weapon Menu
-local WeaponMenuFrame = Instance.new("Frame")
-WeaponMenuFrame.Parent = ContentFrame
-WeaponMenuFrame.Position = UDim2.new(0,8,0,720)
-WeaponMenuFrame.Size = UDim2.new(1,-16,0,120)
-WeaponMenuFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-WeaponMenuFrame.Visible = false
-WeaponMenuFrame.BorderSizePixel = 0
-Instance.new("UICorner",WeaponMenuFrame).CornerRadius = UDim.new(0,5)
+-- Single Weapon Section
+local SingleWeaponLabel = createSectionLabel("=== SINGLE WEAPON ===", 730)
+local SingleWeaponFrame = Instance.new("Frame")
+SingleWeaponFrame.Parent = ContentFrame
+SingleWeaponFrame.Position = UDim2.new(0,8,0,750)
+SingleWeaponFrame.Size = UDim2.new(1,-16,0,120)
+SingleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+SingleWeaponFrame.Visible = false
+SingleWeaponFrame.BorderSizePixel = 0
+Instance.new("UICorner",SingleWeaponFrame).CornerRadius = UDim.new(0,5)
 
-local WeaponMenuLabel = Instance.new("TextLabel")
-WeaponMenuLabel.Parent = WeaponMenuFrame
-WeaponMenuLabel.Size = UDim2.new(1,0,0,24)
-WeaponMenuLabel.Position = UDim2.new(0,0,0,0)
-WeaponMenuLabel.BackgroundTransparency = 1
-WeaponMenuLabel.Font = Enum.Font.SourceSansBold
-WeaponMenuLabel.Text = "Weapon Select"
-WeaponMenuLabel.TextColor3 = Color3.fromRGB(255,180,120)
-WeaponMenuLabel.TextScaled = true
+local SingleWeaponMenuLabel = Instance.new("TextLabel")
+SingleWeaponMenuLabel.Parent = SingleWeaponFrame
+SingleWeaponMenuLabel.Size = UDim2.new(1,0,0,24)
+SingleWeaponMenuLabel.Position = UDim2.new(0,0,0,0)
+SingleWeaponMenuLabel.BackgroundTransparency = 1
+SingleWeaponMenuLabel.Font = Enum.Font.SourceSansBold
+SingleWeaponMenuLabel.Text = "Single Weapon Select"
+SingleWeaponMenuLabel.TextColor3 = Color3.fromRGB(255,180,120)
+SingleWeaponMenuLabel.TextScaled = true
 
-local WeaponListScroll = Instance.new("ScrollingFrame")
-WeaponListScroll.Parent = WeaponMenuFrame
-WeaponListScroll.Position = UDim2.new(0,0,0,24)
-WeaponListScroll.Size = UDim2.new(1,0,1,-24)
-WeaponListScroll.ScrollBarThickness = 4
-WeaponListScroll.CanvasSize = UDim2.new(0,0,0,100)
-WeaponListScroll.BackgroundTransparency = 1
-WeaponListScroll.BorderSizePixel = 0
+local SingleWeaponListScroll = Instance.new("ScrollingFrame")
+SingleWeaponListScroll.Parent = SingleWeaponFrame
+SingleWeaponListScroll.Position = UDim2.new(0,0,0,24)
+SingleWeaponListScroll.Size = UDim2.new(1,0,1,-24)
+SingleWeaponListScroll.ScrollBarThickness = 4
+SingleWeaponListScroll.CanvasSize = UDim2.new(0,0,0,100)
+SingleWeaponListScroll.BackgroundTransparency = 1
+SingleWeaponListScroll.BorderSizePixel = 0
+
+-- Multiple Weapon Section
+local MultipleWeaponLabel = createSectionLabel("=== MULTIPLE WEAPON ===", 880)
+local MultipleWeaponToggleFrame, MultipleWeaponToggleBtn = createToggle("Multiple Weapon Mode", 900, false)
+
+local MultipleWeaponFrame = Instance.new("Frame")
+MultipleWeaponFrame.Parent = ContentFrame
+MultipleWeaponFrame.Position = UDim2.new(0,8,0,930)
+MultipleWeaponFrame.Size = UDim2.new(1,-16,0,150)
+MultipleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+MultipleWeaponFrame.Visible = false
+MultipleWeaponFrame.BorderSizePixel = 0
+Instance.new("UICorner",MultipleWeaponFrame).CornerRadius = UDim.new(0,5)
+
+local MultipleWeaponMenuLabel = Instance.new("TextLabel")
+MultipleWeaponMenuLabel.Parent = MultipleWeaponFrame
+MultipleWeaponMenuLabel.Size = UDim2.new(1,0,0,24)
+MultipleWeaponMenuLabel.Position = UDim2.new(0,0,0,0)
+MultipleWeaponMenuLabel.BackgroundTransparency = 1
+MultipleWeaponMenuLabel.Font = Enum.Font.SourceSansBold
+MultipleWeaponMenuLabel.Text = "Multiple Weapon Select"
+MultipleWeaponMenuLabel.TextColor3 = Color3.fromRGB(255,180,120)
+MultipleWeaponMenuLabel.TextScaled = true
+
+local MultipleWeaponListScroll = Instance.new("ScrollingFrame")
+MultipleWeaponListScroll.Parent = MultipleWeaponFrame
+MultipleWeaponListScroll.Position = UDim2.new(0,0,0,24)
+MultipleWeaponListScroll.Size = UDim2.new(1,0,1,-24)
+MultipleWeaponListScroll.ScrollBarThickness = 4
+MultipleWeaponListScroll.CanvasSize = UDim2.new(0,0,0,100)
+MultipleWeaponListScroll.BackgroundTransparency = 1
+MultipleWeaponListScroll.BorderSizePixel = 0
+
+-- Auto Weapon Switch Section
+local WeaponSwitchLabel = createSectionLabel("=== AUTO WEAPON SWITCH ===", 1090)
+local WeaponSwitchDelayFrame, WeaponSwitchDelayBox = createLabeledBox("Switch Delay (s):", 1, 1110)
+
+-- Multiple Weapon Note
+local MultipleWeaponNote = Instance.new("TextLabel")
+MultipleWeaponNote.Parent = ContentFrame
+MultipleWeaponNote.Size = UDim2.new(1,-16,0,40)
+MultipleWeaponNote.Position = UDim2.new(0,8,0,1140)
+MultipleWeaponNote.BackgroundTransparency = 1
+MultipleWeaponNote.Font = Enum.Font.SourceSans
+MultipleWeaponNote.Text = "Only turn on when you use laser or energy weapon and equipping Reverse Cooling perk. If you use normal weapon, just change the switch delay time higher than reload time."
+MultipleWeaponNote.TextColor3 = Color3.fromRGB(255,100,100)
+MultipleWeaponNote.TextScaled = true
+MultipleWeaponNote.TextWrapped = true
+MultipleWeaponNote.Visible = false
 
 -- ================= Global Variables =================
 _G.aimbot = false
@@ -328,7 +378,14 @@ local shootRange = 200
 
 local midMapPos = Vector3.new(0, 6, -350)
 
-local selectedWeapon = nil
+-- Weapon System Variables
+local selectedSingleWeapon = nil
+local selectedMultipleWeapons = {} -- Table to store multiple selected weapons
+local multipleWeaponMode = false
+local currentWeaponIndex = 1
+local weaponSwitchDelay = 1
+local lastWeaponSwitchTime = 0
+local isSwitchingWeapon = false
 
 -- Noclip Variables
 local noclipEnabled = false
@@ -527,6 +584,82 @@ local function stopCFrameFly()
     end
 end
 
+-- ================= WEAPON SYSTEM =================
+
+local function equipSingleWeapon()
+    if not selectedSingleWeapon then return end
+    
+    local character = localPlayer.Character
+    if character then
+        -- Unequip all weapons first
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                tool.Parent = localPlayer.Backpack
+            end
+        end
+        
+        -- Equip selected weapon
+        local foundTool = localPlayer.Backpack:FindFirstChild(selectedSingleWeapon)
+        if foundTool then
+            foundTool.Parent = character
+        end
+    end
+end
+
+local function switchToNextWeapon()
+    if #selectedMultipleWeapons == 0 or isSwitchingWeapon then
+        return
+    end
+    
+    isSwitchingWeapon = true
+    
+    -- Unequip all weapons first
+    local character = localPlayer.Character
+    if character then
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                tool.Parent = localPlayer.Backpack
+            end
+        end
+        
+        -- Equip next weapon
+        currentWeaponIndex = currentWeaponIndex + 1
+        if currentWeaponIndex > #selectedMultipleWeapons then
+            currentWeaponIndex = 1
+        end
+        
+        local nextWeaponName = selectedMultipleWeapons[currentWeaponIndex]
+        local foundTool = localPlayer.Backpack:FindFirstChild(nextWeaponName)
+        if foundTool then
+            foundTool.Parent = character
+        end
+    end
+    
+    isSwitchingWeapon = false
+end
+
+local function autoWeaponSwitch()
+    if not multipleWeaponMode or #selectedMultipleWeapons <= 1 then
+        return -- No need to switch if not in multiple mode or 1 or fewer weapons selected
+    end
+    
+    local currentTime = tick()
+    if currentTime - lastWeaponSwitchTime >= weaponSwitchDelay then
+        switchToNextWeapon()
+        lastWeaponSwitchTime = currentTime
+    end
+end
+
+local function equipWeaponIfNeeded()
+    if multipleWeaponMode then
+        if #selectedMultipleWeapons > 0 then
+            autoWeaponSwitch()
+        end
+    else
+        equipSingleWeapon()
+    end
+end
+
 -- ================= TARGET PRIORITY SYSTEM =================
 
 local function getTargetPriority(zombieName)
@@ -705,6 +838,24 @@ ClosestToggle.MouseButton1Click:Connect(function()
     ClosestToggle.TextColor3 = priorityTargets.Closest and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
 end)
 
+MultipleWeaponToggleBtn.MouseButton1Click:Connect(function()
+    multipleWeaponMode = not multipleWeaponMode
+    MultipleWeaponToggleBtn.Text = multipleWeaponMode and "ON" or "OFF"
+    MultipleWeaponToggleBtn.TextColor3 = multipleWeaponMode and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
+    
+    -- Reset weapon state when switching modes
+    currentWeaponIndex = 1
+    lastWeaponSwitchTime = 0
+    isSwitchingWeapon = false
+    
+    -- Equip appropriate weapon based on mode
+    if multipleWeaponMode and #selectedMultipleWeapons > 0 then
+        switchToNextWeapon()
+    elseif not multipleWeaponMode and selectedSingleWeapon then
+        equipSingleWeapon()
+    end
+end)
+
 -- Dropdown Events
 AttackPosDropdown.MouseButton1Click:Connect(function()
     attackPosition = AttackPosDropdown.Text
@@ -761,42 +912,131 @@ MidMapZBox.FocusLost:Connect(function()
     MidMapZBox.Text = tostring(midMapPos.Z)
 end)
 
--- Weapon Menu
-function refreshWeaponMenu()
-    WeaponListScroll:ClearAllChildren()
+WeaponSwitchDelayBox.FocusLost:Connect(function()
+    local v = tonumber(WeaponSwitchDelayBox.Text)
+    if v and v > 0 then
+        weaponSwitchDelay = v
+        WeaponSwitchDelayBox.Text = tostring(weaponSwitchDelay)
+    else
+        WeaponSwitchDelayBox.Text = tostring(weaponSwitchDelay)
+    end
+end)
+
+-- Weapon Menu Functions
+function refreshSingleWeaponMenu()
+    SingleWeaponListScroll:ClearAllChildren()
     local weapons = {}
     for _, tool in pairs(localPlayer.Backpack:GetChildren()) do
         if tool:IsA("Tool") then
             table.insert(weapons, tool.Name)
         end
     end
+    
     for i, weaponName in pairs(weapons) do
         local btn = Instance.new("TextButton")
-        btn.Parent = WeaponListScroll
+        btn.Parent = SingleWeaponListScroll
         btn.Size = UDim2.new(1,0,0,28)
         btn.Position = UDim2.new(0,0,0,(i-1)*30)
         btn.Text = weaponName
         btn.Font = Enum.Font.SourceSans
         btn.TextScaled = true
-        btn.BackgroundColor3 = (selectedWeapon == weaponName) and Color3.fromRGB(120,200,100) or Color3.fromRGB(90,90,120)
+        
+        -- Check if weapon is selected
+        local isSelected = (selectedSingleWeapon == weaponName)
+        
+        btn.BackgroundColor3 = isSelected and Color3.fromRGB(120,200,100) or Color3.fromRGB(90,90,120)
         btn.BorderSizePixel = 0
         Instance.new("UICorner",btn).CornerRadius = UDim.new(0,6)
+        
         btn.MouseButton1Click:Connect(function()
-            selectedWeapon = weaponName
-            refreshWeaponMenu()
+            -- Single selection - only one weapon can be selected
+            selectedSingleWeapon = weaponName
+            refreshSingleWeaponMenu()
+            
+            -- Equip the weapon immediately if not in multiple mode
+            if not multipleWeaponMode then
+                equipSingleWeapon()
+            end
         end)
     end
-    WeaponListScroll.CanvasSize = UDim2.new(0,0,0,#weapons*30)
+    SingleWeaponListScroll.CanvasSize = UDim2.new(0,0,0,#weapons*30)
+end
+
+function refreshMultipleWeaponMenu()
+    MultipleWeaponListScroll:ClearAllChildren()
+    local weapons = {}
+    for _, tool in pairs(localPlayer.Backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            table.insert(weapons, tool.Name)
+        end
+    end
+    
+    for i, weaponName in pairs(weapons) do
+        local btn = Instance.new("TextButton")
+        btn.Parent = MultipleWeaponListScroll
+        btn.Size = UDim2.new(1,0,0,28)
+        btn.Position = UDim2.new(0,0,0,(i-1)*30)
+        btn.Text = weaponName
+        btn.Font = Enum.Font.SourceSans
+        btn.TextScaled = true
+        
+        -- Check if weapon is selected
+        local isSelected = false
+        for _, selectedWeapon in ipairs(selectedMultipleWeapons) do
+            if selectedWeapon == weaponName then
+                isSelected = true
+                break
+            end
+        end
+        
+        btn.BackgroundColor3 = isSelected and Color3.fromRGB(120,200,100) or Color3.fromRGB(90,90,120)
+        btn.BorderSizePixel = 0
+        Instance.new("UICorner",btn).CornerRadius = UDim.new(0,6)
+        
+        btn.MouseButton1Click:Connect(function()
+            -- Toggle weapon selection for multiple weapons
+            local foundIndex = nil
+            for index, selectedWeapon in ipairs(selectedMultipleWeapons) do
+                if selectedWeapon == weaponName then
+                    foundIndex = index
+                    break
+                end
+            end
+            
+            if foundIndex then
+                table.remove(selectedMultipleWeapons, foundIndex)
+            else
+                table.insert(selectedMultipleWeapons, weaponName)
+            end
+            
+            -- Reset current weapon index when selection changes
+            if #selectedMultipleWeapons > 0 then
+                currentWeaponIndex = 1
+                
+                -- Equip first weapon immediately if in multiple mode
+                if multipleWeaponMode then
+                    switchToNextWeapon()
+                end
+            else
+                currentWeaponIndex = 0
+            end
+            
+            refreshMultipleWeaponMenu()
+        end)
+    end
+    MultipleWeaponListScroll.CanvasSize = UDim2.new(0,0,0,#weapons*30)
 end
 
 -- Toggle Menu
 HubTitle.MouseButton1Click:Connect(function()
     expanded = not expanded
     ContentFrame.Visible = expanded
-    WeaponMenuFrame.Visible = expanded
+    SingleWeaponFrame.Visible = expanded
+    MultipleWeaponFrame.Visible = expanded
     if expanded then
-        refreshWeaponMenu()
-        MainFrame.Size = UDim2.new(0,250,0,870)
+        refreshSingleWeaponMenu()
+        refreshMultipleWeaponMenu()
+        MainFrame.Size = UDim2.new(0,250,0,1200)
         
         -- Show all elements
         ToggleAimbotBtn.Visible = true
@@ -827,6 +1067,18 @@ HubTitle.MouseButton1Click:Connect(function()
         MidMapFrame.Visible = true
         MidMapYFrame.Visible = true
         MidMapZFrame.Visible = true
+        
+        SingleWeaponLabel.Visible = true
+        SingleWeaponFrame.Visible = true
+        
+        MultipleWeaponLabel.Visible = true
+        MultipleWeaponToggleFrame.Visible = true
+        MultipleWeaponFrame.Visible = true
+        
+        WeaponSwitchLabel.Visible = true
+        WeaponSwitchDelayFrame.Visible = true
+        
+        MultipleWeaponNote.Visible = true
     else
         MainFrame.Size = UDim2.new(0,250,0,40)
         
@@ -860,6 +1112,18 @@ HubTitle.MouseButton1Click:Connect(function()
         MidMapFrame.Visible = false
         MidMapYFrame.Visible = false
         MidMapZFrame.Visible = false
+        
+        SingleWeaponLabel.Visible = false
+        SingleWeaponFrame.Visible = false
+        
+        MultipleWeaponLabel.Visible = false
+        MultipleWeaponToggleFrame.Visible = false
+        MultipleWeaponFrame.Visible = false
+        
+        WeaponSwitchLabel.Visible = false
+        WeaponSwitchDelayFrame.Visible = false
+        
+        MultipleWeaponNote.Visible = false
     end
 end)
 
@@ -919,30 +1183,14 @@ end
 
 local lastClickTime = 0
 
-local function equipWeaponIfSelected()
-    if not selectedWeapon then return end
-    local backpack = localPlayer.Backpack
-    local character = localPlayer.Character
-    if character then
-        local currentWeapon = nil
-        for _, tool in pairs(character:GetChildren()) do
-            if tool:IsA("Tool") then
-                currentWeapon = tool.Name
-                break
-            end
-        end
-        if currentWeapon ~= selectedWeapon then
-            local foundTool = backpack:FindFirstChild(selectedWeapon)
-            if foundTool then
-                foundTool.Parent = character
-            end
-        end
-    end
-end
-
 local function autoShoot(target, dist)
-    equipWeaponIfSelected()
     if not target or not target:FindFirstChild("Head") then return end
+    
+    -- Auto weapon switching (only in multiple weapon mode)
+    if multipleWeaponMode and #selectedMultipleWeapons > 1 and _G.autoshoot then
+        autoWeaponSwitch()
+    end
+    
     local distance = dist or ((target.Head.Position - localPlayer.Character.Head.Position).Magnitude)
     if distance <= shootRange then
         local currentTime = tick()
@@ -1124,9 +1372,23 @@ localPlayer.CharacterAdded:Connect(function(character)
     noclipEnabled = false
     originalCollisions = {}
     
+    -- Reset weapon switching
+    currentWeaponIndex = 1
+    lastWeaponSwitchTime = 0
+    isSwitchingWeapon = false
+    
     task.wait(1)
     if _G.noclip and not zombiesAlive() then
         enableNoclip()
+    end
+    
+    -- Re-equip selected weapons based on mode
+    if multipleWeaponMode and #selectedMultipleWeapons > 0 then
+        task.wait(2)
+        switchToNextWeapon()
+    elseif not multipleWeaponMode and selectedSingleWeapon then
+        task.wait(2)
+        equipSingleWeapon()
     end
 end)
 
