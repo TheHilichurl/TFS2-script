@@ -246,19 +246,18 @@ local HunterFrame, HunterToggle = createToggle("Hunter", 450, true)
 local LurkerFrame, LurkerToggle = createToggle("Lurker", 480, true)
 local BerserkerFrame, BerserkerToggle = createToggle("Berserker", 510, true)
 local BossFrame, BossToggle = createToggle("Boss", 540, true)
-local ClosestFrame, ClosestToggle = createToggle("Closest to Mid", 570, true)
 
 -- Mid Map Section
-local MidMapLabel = createSectionLabel("=== MID MAP ===", 610)
-local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,630)
-local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,660)
-local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,690)
+local MidMapLabel = createSectionLabel("=== MID MAP ===", 570)
+local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,590)
+local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,620)
+local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,650)
 
 -- Single Weapon Section
-local SingleWeaponLabel = createSectionLabel("=== SINGLE WEAPON ===", 730)
+local SingleWeaponLabel = createSectionLabel("=== SINGLE WEAPON ===", 690)
 local SingleWeaponFrame = Instance.new("Frame")
 SingleWeaponFrame.Parent = ContentFrame
-SingleWeaponFrame.Position = UDim2.new(0,8,0,750)
+SingleWeaponFrame.Position = UDim2.new(0,8,0,710)
 SingleWeaponFrame.Size = UDim2.new(1,-16,0,120)
 SingleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 SingleWeaponFrame.Visible = false
@@ -285,12 +284,12 @@ SingleWeaponListScroll.BackgroundTransparency = 1
 SingleWeaponListScroll.BorderSizePixel = 0
 
 -- Multiple Weapon Section
-local MultipleWeaponLabel = createSectionLabel("=== MULTIPLE WEAPON ===", 880)
-local MultipleWeaponToggleFrame, MultipleWeaponToggleBtn = createToggle("Multiple Weapon Mode", 900, false)
+local MultipleWeaponLabel = createSectionLabel("=== MULTIPLE WEAPON ===", 840)
+local MultipleWeaponToggleFrame, MultipleWeaponToggleBtn = createToggle("Multiple Weapon Mode", 860, false)
 
 local MultipleWeaponFrame = Instance.new("Frame")
 MultipleWeaponFrame.Parent = ContentFrame
-MultipleWeaponFrame.Position = UDim2.new(0,8,0,930)
+MultipleWeaponFrame.Position = UDim2.new(0,8,0,890)
 MultipleWeaponFrame.Size = UDim2.new(1,-16,0,150)
 MultipleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 MultipleWeaponFrame.Visible = false
@@ -317,14 +316,14 @@ MultipleWeaponListScroll.BackgroundTransparency = 1
 MultipleWeaponListScroll.BorderSizePixel = 0
 
 -- Auto Weapon Switch Section
-local WeaponSwitchLabel = createSectionLabel("=== AUTO WEAPON SWITCH ===", 1090)
-local WeaponSwitchDelayFrame, WeaponSwitchDelayBox = createLabeledBox("Switch Delay (s):", 1, 1110)
+local WeaponSwitchLabel = createSectionLabel("=== AUTO WEAPON SWITCH ===", 1050)
+local WeaponSwitchDelayFrame, WeaponSwitchDelayBox = createLabeledBox("Switch Delay (s):", 1, 1070)
 
 -- Multiple Weapon Note
 local MultipleWeaponNote = Instance.new("TextLabel")
 MultipleWeaponNote.Parent = ContentFrame
 MultipleWeaponNote.Size = UDim2.new(1,-16,0,40)
-MultipleWeaponNote.Position = UDim2.new(0,8,0,1140)
+MultipleWeaponNote.Position = UDim2.new(0,8,0,1100)
 MultipleWeaponNote.BackgroundTransparency = 1
 MultipleWeaponNote.Font = Enum.Font.SourceSans
 MultipleWeaponNote.Text = "Only turn on when you use laser or energy weapon and equipping Reverse Cooling perk. If you use normal weapon, just change the switch delay time higher than reload time."
@@ -360,8 +359,7 @@ local priorityTargets = {
     Hunter = true,
     Lurker = true,
     Berserker = true,
-    Boss = true,
-    Closest = true
+    Boss = true
 }
 
 -- Stable movement
@@ -389,8 +387,7 @@ local isSwitchingWeapon = false
 
 -- Noclip Variables
 local noclipEnabled = false
-local originalCollisions = {}
-local noclipLoop = nil
+local noclipConnection = nil
 
 -- ================= LOCK TARGET SYSTEM =================
 
@@ -591,17 +588,29 @@ local function equipSingleWeapon()
     
     local character = localPlayer.Character
     if character then
-        -- Unequip all weapons first
+        -- Check if the correct weapon is already equipped
+        local currentWeapon = nil
         for _, tool in pairs(character:GetChildren()) do
             if tool:IsA("Tool") then
-                tool.Parent = localPlayer.Backpack
+                currentWeapon = tool
+                break
             end
         end
         
-        -- Equip selected weapon
-        local foundTool = localPlayer.Backpack:FindFirstChild(selectedSingleWeapon)
-        if foundTool then
-            foundTool.Parent = character
+        -- Only switch weapons if the current weapon is not the selected one
+        if not currentWeapon or currentWeapon.Name ~= selectedSingleWeapon then
+            -- Unequip all weapons first
+            for _, tool in pairs(character:GetChildren()) do
+                if tool:IsA("Tool") then
+                    tool.Parent = localPlayer.Backpack
+                end
+            end
+            
+            -- Equip selected weapon
+            local foundTool = localPlayer.Backpack:FindFirstChild(selectedSingleWeapon)
+            if foundTool then
+                foundTool.Parent = character
+            end
         end
     end
 end
@@ -656,7 +665,10 @@ local function equipWeaponIfNeeded()
             autoWeaponSwitch()
         end
     else
-        equipSingleWeapon()
+        -- Always ensure the selected single weapon is equipped during combat
+        if selectedSingleWeapon and (_G.autoshoot or _G.automove) then
+            equipSingleWeapon()
+        end
     end
 end
 
@@ -688,7 +700,7 @@ local function findPriorityZombie()
     
     local bestTarget = nil
     local bestPriority = -1
-    local bestDistance = math.huge
+    local bestDistanceToMid = math.huge
     
     if not localPlayer.Character or not localPlayer.Character:FindFirstChild("Head") then 
         return nil, math.huge 
@@ -701,37 +713,35 @@ local function findPriorityZombie()
         end
     end
     
-    -- Priority enemy (Wraith, Hunter, Lurker, Berserker, Boss)
+    -- First pass: find priority targets based on distance to mid point
     for _, zombie in pairs(allZombies) do
         local priority = getTargetPriority(zombie.Name)
+        local distanceToMid = (zombie.Head.Position - midMapPos).Magnitude
         
-        if priority > bestPriority then
-            bestTarget = zombie
-            bestPriority = priority
-        elseif priority == bestPriority and bestTarget then
-            local currentDistance = (zombie.Head.Position - localPlayer.Character.Head.Position).Magnitude
-            local bestTargetDistance = (bestTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude
-            if currentDistance < bestTargetDistance then
+        if priority > 1 then -- This is a priority target
+            if priority > bestPriority then
                 bestTarget = zombie
+                bestPriority = priority
+                bestDistanceToMid = distanceToMid
+            elseif priority == bestPriority then
+                -- If same priority, choose the one closer to mid
+                if distanceToMid < bestDistanceToMid then
+                    bestTarget = zombie
+                    bestDistanceToMid = distanceToMid
+                end
             end
         end
     end
     
-    if not bestTarget and priorityTargets.Closest then
-        local closestDistanceToMid = math.huge
-        local closestTargetToMid = nil
-        
+    -- If no priority target found, find the closest zombie to mid point
+    if not bestTarget then
+        bestDistanceToMid = math.huge
         for _, zombie in pairs(allZombies) do
             local distanceToMid = (zombie.Head.Position - midMapPos).Magnitude
-            
-            if distanceToMid < closestDistanceToMid then
-                closestDistanceToMid = distanceToMid
-                closestTargetToMid = zombie
+            if distanceToMid < bestDistanceToMid then
+                bestDistanceToMid = distanceToMid
+                bestTarget = zombie
             end
-        end
-        
-        if closestTargetToMid then
-            bestTarget = closestTargetToMid
         end
     end
     
@@ -743,6 +753,50 @@ local function findPriorityZombie()
     
     local finalDistance = bestTarget and (bestTarget.Head.Position - localPlayer.Character.Head.Position).Magnitude or math.huge
     return bestTarget, finalDistance
+end
+
+-- ================= NOCLIP SYSTEM =================
+local function enableNoclip()
+    if not localPlayer.Character then return end
+    
+    noclipEnabled = true
+    
+    if noclipConnection then
+        noclipConnection:Disconnect()
+    end
+    
+    noclipConnection = RunService.Stepped:Connect(function()
+        if not _G.noclip or not localPlayer.Character then
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            return
+        end
+        
+        for _, part in pairs(localPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end)
+end
+
+local function disableNoclip()
+    noclipEnabled = false
+    
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    
+    if localPlayer.Character then
+        for _, part in pairs(localPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
 end
 
 -- ================= BUTTON EVENTS =================
@@ -830,12 +884,6 @@ BossToggle.MouseButton1Click:Connect(function()
     priorityTargets.Boss = not priorityTargets.Boss
     BossToggle.Text = priorityTargets.Boss and "ON" or "OFF"
     BossToggle.TextColor3 = priorityTargets.Boss and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
-end)
-
-ClosestToggle.MouseButton1Click:Connect(function()
-    priorityTargets.Closest = not priorityTargets.Closest
-    ClosestToggle.Text = priorityTargets.Closest and "ON" or "OFF"
-    ClosestToggle.TextColor3 = priorityTargets.Closest and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
 end)
 
 MultipleWeaponToggleBtn.MouseButton1Click:Connect(function()
@@ -1061,7 +1109,6 @@ HubTitle.MouseButton1Click:Connect(function()
         LurkerFrame.Visible = true
         BerserkerFrame.Visible = true
         BossFrame.Visible = true
-        ClosestFrame.Visible = true
         
         MidMapLabel.Visible = true
         MidMapFrame.Visible = true
@@ -1106,7 +1153,6 @@ HubTitle.MouseButton1Click:Connect(function()
         LurkerFrame.Visible = false
         BerserkerFrame.Visible = false
         BossFrame.Visible = false
-        ClosestFrame.Visible = false
         
         MidMapLabel.Visible = false
         MidMapFrame.Visible = false
@@ -1186,6 +1232,9 @@ local lastClickTime = 0
 local function autoShoot(target, dist)
     if not target or not target:FindFirstChild("Head") then return end
     
+    -- Ensure correct weapon is equipped before shooting
+    equipWeaponIfNeeded()
+    
     -- Auto weapon switching (only in multiple weapon mode)
     if multipleWeaponMode and #selectedMultipleWeapons > 1 and _G.autoshoot then
         autoWeaponSwitch()
@@ -1210,71 +1259,6 @@ local function autoShoot(target, dist)
         end
     end
 end
-
--- ================= NOCLIP SYSTEM =================
-local function enableNoclip()
-    if not localPlayer.Character or zombiesAlive() then return end
-    
-    originalCollisions = {}
-    for _, part in pairs(localPlayer.Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            originalCollisions[part] = part.CanCollide
-            part.CanCollide = false
-        end
-    end
-    noclipEnabled = true
-    
-    if noclipLoop then
-        noclipLoop:Disconnect()
-    end
-    
-    noclipLoop = RunService.Stepped:Connect(function()
-        if not _G.noclip or zombiesAlive() or not localPlayer.Character then
-            disableNoclip()
-            return
-        end
-        
-        for _, part in pairs(localPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end)
-end
-
-local function disableNoclip()
-    noclipEnabled = false
-    
-    if noclipLoop then
-        noclipLoop:Disconnect()
-        noclipLoop = nil
-    end
-    
-    if localPlayer.Character then
-        for part, canCollide in pairs(originalCollisions) do
-            if part and part.Parent then
-                part.CanCollide = canCollide
-            end
-        end
-    end
-    originalCollisions = {}
-end
-
-local function updateNoclip()
-    local hasZombies = zombiesAlive()
-    
-    if _G.noclip and not hasZombies then
-        if not noclipEnabled then
-            enableNoclip()
-        end
-    else
-        if noclipEnabled then
-            disableNoclip()
-        end
-    end
-end
-
-RunService.Stepped:Connect(updateNoclip)
 
 -- ================= Auto Ready Logic =================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1323,6 +1307,9 @@ RunService.RenderStepped:Connect(function()
     local target, dist = findPriorityZombie()
     
     if target then
+        -- Ensure correct weapon is equipped before combat actions
+        equipWeaponIfNeeded()
+        
         -- Aimbot
         if _G.aimbot then
             camera.CFrame = CFrame.new(camera.CFrame.Position, target.Head.Position)
@@ -1370,7 +1357,6 @@ localPlayer.CharacterAdded:Connect(function(character)
     
     disableNoclip()
     noclipEnabled = false
-    originalCollisions = {}
     
     -- Reset weapon switching
     currentWeaponIndex = 1
@@ -1378,16 +1364,15 @@ localPlayer.CharacterAdded:Connect(function(character)
     isSwitchingWeapon = false
     
     task.wait(1)
-    if _G.noclip and not zombiesAlive() then
+    if _G.noclip then
         enableNoclip()
     end
     
     -- Re-equip selected weapons based on mode
+    task.wait(2) -- Wait for character to fully load
     if multipleWeaponMode and #selectedMultipleWeapons > 0 then
-        task.wait(2)
         switchToNextWeapon()
     elseif not multipleWeaponMode and selectedSingleWeapon then
-        task.wait(2)
         equipSingleWeapon()
     end
 end)
