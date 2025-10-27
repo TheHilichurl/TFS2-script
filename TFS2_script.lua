@@ -241,23 +241,24 @@ local AttackPosFrame, AttackPosDropdown, AttackPosMenu = createDropdown("Attack 
 
 -- Priority Targets Section
 local PriorityLabel = createSectionLabel("=== PRIORITY TARGETS ===", 400)
-local WraithFrame, WraithToggle = createToggle("Wraith", 420, true)
-local HunterFrame, HunterToggle = createToggle("Hunter", 450, true)
-local LurkerFrame, LurkerToggle = createToggle("Lurker", 480, true)
-local BerserkerFrame, BerserkerToggle = createToggle("Berserker", 510, true)
-local BossFrame, BossToggle = createToggle("Boss", 540, true)
+local SniperFrame, SniperToggle = createToggle("Sniper Zombie", 420, true)
+local WraithFrame, WraithToggle = createToggle("Wraith", 450, true)
+local HunterFrame, HunterToggle = createToggle("Hunter", 480, true)
+local LurkerFrame, LurkerToggle = createToggle("Lurker", 510, true)
+local BerserkerFrame, BerserkerToggle = createToggle("Berserker", 540, true)
+local BossFrame, BossToggle = createToggle("Boss", 570, true)
 
 -- Mid Map Section
-local MidMapLabel = createSectionLabel("=== MID MAP ===", 570)
-local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,590)
-local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,620)
-local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,650)
+local MidMapLabel = createSectionLabel("=== MID MAP ===", 600)
+local MidMapFrame, MidMapXBox       = createLabeledBox("Mid X:",0,620)
+local MidMapYFrame, MidMapYBox      = createLabeledBox("Mid Y:",6,650)
+local MidMapZFrame, MidMapZBox      = createLabeledBox("Mid Z:",-350,680)
 
 -- Single Weapon Section
-local SingleWeaponLabel = createSectionLabel("=== SINGLE WEAPON ===", 690)
+local SingleWeaponLabel = createSectionLabel("=== SINGLE WEAPON ===", 720)
 local SingleWeaponFrame = Instance.new("Frame")
 SingleWeaponFrame.Parent = ContentFrame
-SingleWeaponFrame.Position = UDim2.new(0,8,0,710)
+SingleWeaponFrame.Position = UDim2.new(0,8,0,740)
 SingleWeaponFrame.Size = UDim2.new(1,-16,0,120)
 SingleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 SingleWeaponFrame.Visible = false
@@ -284,12 +285,12 @@ SingleWeaponListScroll.BackgroundTransparency = 1
 SingleWeaponListScroll.BorderSizePixel = 0
 
 -- Multiple Weapon Section
-local MultipleWeaponLabel = createSectionLabel("=== MULTIPLE WEAPON ===", 840)
-local MultipleWeaponToggleFrame, MultipleWeaponToggleBtn = createToggle("Multiple Weapon Mode", 860, false)
+local MultipleWeaponLabel = createSectionLabel("=== MULTIPLE WEAPON ===", 870)
+local MultipleWeaponToggleFrame, MultipleWeaponToggleBtn = createToggle("Multiple Weapon Mode", 890, false)
 
 local MultipleWeaponFrame = Instance.new("Frame")
 MultipleWeaponFrame.Parent = ContentFrame
-MultipleWeaponFrame.Position = UDim2.new(0,8,0,890)
+MultipleWeaponFrame.Position = UDim2.new(0,8,0,920)
 MultipleWeaponFrame.Size = UDim2.new(1,-16,0,150)
 MultipleWeaponFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 MultipleWeaponFrame.Visible = false
@@ -316,14 +317,14 @@ MultipleWeaponListScroll.BackgroundTransparency = 1
 MultipleWeaponListScroll.BorderSizePixel = 0
 
 -- Auto Weapon Switch Section
-local WeaponSwitchLabel = createSectionLabel("=== AUTO WEAPON SWITCH ===", 1050)
-local WeaponSwitchDelayFrame, WeaponSwitchDelayBox = createLabeledBox("Switch Delay (s):", 1, 1070)
+local WeaponSwitchLabel = createSectionLabel("=== AUTO WEAPON SWITCH ===", 1080)
+local WeaponSwitchDelayFrame, WeaponSwitchDelayBox = createLabeledBox("Switch Delay (s):", 1, 1100)
 
 -- Multiple Weapon Note
 local MultipleWeaponNote = Instance.new("TextLabel")
 MultipleWeaponNote.Parent = ContentFrame
 MultipleWeaponNote.Size = UDim2.new(1,-16,0,40)
-MultipleWeaponNote.Position = UDim2.new(0,8,0,1100)
+MultipleWeaponNote.Position = UDim2.new(0,8,0,1130)
 MultipleWeaponNote.BackgroundTransparency = 1
 MultipleWeaponNote.Font = Enum.Font.SourceSans
 MultipleWeaponNote.Text = "Only turn on when you use laser or energy weapon and equipping Reverse Cooling perk. If you use normal weapon, just change the switch delay time higher than reload time."
@@ -355,6 +356,7 @@ local attackPosition = "Above"
 
 -- Priority target settings
 local priorityTargets = {
+    Sniper = true,
     Wraith = true,
     Hunter = true,
     Lurker = true,
@@ -677,7 +679,9 @@ end
 local function getTargetPriority(zombieName)
     local nameLower = string.lower(zombieName)
     
-    if priorityTargets.Wraith and string.find(nameLower, "wraith") then
+    if priorityTargets.Sniper and string.find(nameLower, "sniper") then
+        return 7
+    elseif priorityTargets.Wraith and string.find(nameLower, "wraith") then
         return 6
     elseif priorityTargets.Hunter and string.find(nameLower, "hunter") then
         return 5
@@ -856,6 +860,12 @@ ToggleNoclipBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Toggle Events
+SniperToggle.MouseButton1Click:Connect(function()
+    priorityTargets.Sniper = not priorityTargets.Sniper
+    SniperToggle.Text = priorityTargets.Sniper and "ON" or "OFF"
+    SniperToggle.TextColor3 = priorityTargets.Sniper and Color3.fromRGB(100,255,100) or Color3.fromRGB(255,100,100)
+end)
+
 WraithToggle.MouseButton1Click:Connect(function()
     priorityTargets.Wraith = not priorityTargets.Wraith
     WraithToggle.Text = priorityTargets.Wraith and "ON" or "OFF"
@@ -1104,6 +1114,7 @@ HubTitle.MouseButton1Click:Connect(function()
         AttackPosFrame.Visible = true
         
         PriorityLabel.Visible = true
+        SniperFrame.Visible = true
         WraithFrame.Visible = true
         HunterFrame.Visible = true
         LurkerFrame.Visible = true
@@ -1148,6 +1159,7 @@ HubTitle.MouseButton1Click:Connect(function()
         AttackPosMenu.Visible = false
         
         PriorityLabel.Visible = false
+        SniperFrame.Visible = false
         WraithFrame.Visible = false
         HunterFrame.Visible = false
         LurkerFrame.Visible = false
